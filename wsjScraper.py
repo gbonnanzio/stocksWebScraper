@@ -62,56 +62,57 @@ def write_vals_to_xl(vals):
         create_error_window(driver_error,400,100)
 
 def searchWSJ(driver):
-    # get chromedriver app from the local machine
-
-    # try to get the necessary values from the table on the website
+    # url base for searches
     url_base = 'https://www.wsj.com/search?query='
+    # url extensions for what will be entered into the search bar 
     url_end = ['DJIA','SPX','COMP','RUT','RMCC','UKX','SXXP','NIK','SHCOMP','BVSP','891800','BUXX','GC00','CL.1']
     vals_found = []
     # go to this website
     for indx in url_end:
-        print(indx+'\n')
         driver.get(url_base+indx)
+        # loading remains False while driver is loading
         loading = False
+        # current amount of seconds waited for page to load
         safety_catch = 0
         while(loading == False):
-            
-            # get value for DJIA
+            # try to get value if page has loaded 
             try:
                 curr_val = driver.find_element_by_class_name('WSJTheme--last--3GifPA1e ').get_attribute("innerHTML")
                 vals_found.append(round(float(curr_val),2))
                 loading = True
             except:
+                # if value isn't there wait one second and restart loop
                 time.sleep(1)
                 loading = False
                 safety_catch = safety_catch + 1
+                # if waited more than 9 seconds for load break loop
                 if(safety_catch > 9):
                     vals_found.append('Not Found')
                     break
-
+    
     return vals_found
     
 
 def searchTreasury(driver):
+    # url to treasury website
     url = 'https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=yield'
     driver.get(url)
     vals_found = []
-
+    # find where the elements are 
     oddrows = driver.find_elements_by_class_name('oddrow')
     last_row = oddrows[-1]
     td_list = last_row.find_elements_by_tag_name('td')
-
+    # indexes of interest correspinding to 3M, 2Y, 10Y, and 30Y
     td_indxs = [3,7,11,12]
     for indx in td_indxs:
         curr_td = td_list[indx]
         curr_val = curr_td.get_attribute('innerHTML')
         vals_found.append(float(curr_val))
-    
     return vals_found
 
 def checkExcelClosed():
     root = tk.Tk()
-    # width and height of message
+    # width and height of window
     width = 400
     height = 100
     # width and height of user screen
@@ -122,21 +123,21 @@ def checkExcelClosed():
     y = (screenH/2) - (height/2)
     # set root starting position and size
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-    # not resizable
-    #root.resizable(0,0)
-    # title
+    # add text and button
     root.title('Close Excel')
     tk.Label(root,text='Click OK when you have saved and closed your current excel file.\n').pack(side=tk.TOP)
     button = tk.Button(root,text='OK',command = root.destroy,height=1,width=10)
     button.pack(side=tk.TOP)
-    # error message
+    # display window
     root.mainloop()
 
 
 def main():
 
+    # check to make sure excel sheet is saved and closed
     checkExcelClosed()
 
+    # try to find the chrome driver and launch it
     try:
         driver_path = r'C:/ChromeDriver/chromedriver.exe'
         driver = webdriver.Chrome(executable_path=driver_path)
@@ -145,10 +146,13 @@ def main():
         create_error_window(driver_error,400,100)
         return
     
-    
+    # search the Wall Street Journal for values
     wsj_vals = searchWSJ(driver)
+    # search the treasury for values
     treas_vals = searchTreasury(driver)
+    # write values to excel 
     combined_vals = wsj_vals + treas_vals
     write_vals_to_xl(combined_vals)
     
+# launch program 
 main()
