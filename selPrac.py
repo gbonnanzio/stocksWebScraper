@@ -1,5 +1,7 @@
 import tkinter as tk
 from selenium import webdriver
+import openpyxl
+
 
 def create_error_window(error_message,width,height):
     # create root window
@@ -23,6 +25,33 @@ def create_error_window(error_message,width,height):
     # launch window
     root.mainloop() 
 
+def write_vals_to_xl(vals):
+    file_path = r'C:/Users/gbonn/coding_Projects/stocksWebScraper/testWorksheet.xlsx'
+    # load excel spreadsheet
+    try:
+        wb = openpyxl.load_workbook(file_path)
+    except:
+        loading_error = "An error has occurred.\n\nThe spreadsheet cannot be found at path:\n" + file_path
+        create_error_window(loading_error,400,100)
+        return
+    # create a backup of current spreadsheet
+    try:
+        backup_file_path = r'C:/Users/gbonn/coding_Projects/stocksWebScraper/backup/testWorksheetBackup.xlsx'
+        wb.save(backup_file_path)
+    except:
+        backup_error = "An error has occurred.\n\nThe backup file cannot be saved to path:\n" + backup_file_path
+        create_error_window(backup_error,400,100)
+    # add new values to current spreadsheet
+    ws = wb['Sheet1']
+    for i in range(0,len(vals)):
+        currCell = ws.cell(i+1,1) 
+        currCell.value = vals[i]
+    # save updated copy of spreadsheet 
+    try:
+        wb.save(file_path)
+    except:
+        driver_error = "An error has occurred.\n\nThe spreadsheet cannot be saved.\n\nTry saving and closing the spreadsheet and\nrunning the program again."
+        create_error_window(driver_error,400,100)
 
 def main():
     # get chromedriver app from the local machine 
@@ -60,5 +89,10 @@ def main():
         create_error_window(general_error,400,150)
     # close driver
     driver.close() 
+    print(vals_found)
+    write_vals_to_xl(vals_found)
+    #vals_found_str = vals_found[0]+" "+vals_found[1]+" "+vals_found[2]+" "+vals_found[3]
+    #create_error_window(vals_found_str,400,200)
+    
     
 main()
