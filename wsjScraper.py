@@ -1,3 +1,10 @@
+'''
+Author: Geoffrey Bonnanzio
+This file scrapes stock data from the Wall Street Journal website as well as from the US Treasury Website
+and dumps the information into an existing excel spreadsheet. The spreadsheet must be closed when the 
+program is run. The program creates a copy of the spreadsheet in the folder backup/ when run.
+'''
+
 import tkinter as tk
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
