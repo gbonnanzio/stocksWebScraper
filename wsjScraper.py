@@ -49,7 +49,7 @@ def write_vals_to_xl(vals):
     currCell = ws.cell(currRow,2)
     currCell.value = date.today()
     curr_indx = 0
-    for i in range(9,len(vals)+3):
+    for i in range(9,9+len(vals)+3):
         if(i != 14 and i != 22 and i != 25):
             currCell = ws.cell(i,2) 
             currCell.value = vals[curr_indx]
@@ -66,7 +66,7 @@ def searchWSJ(driver):
 
     # try to get the necessary values from the table on the website
     url_base = 'https://www.wsj.com/search?query='
-    url_end = ['DJIA','SPX','COMP','RUT','RMCC','UKX','SXXP','NIK','SHCOMP','BVSP','891800','BUXX']
+    url_end = ['DJIA','SPX','COMP','RUT','RMCC','UKX','SXXP','NIK','SHCOMP','BVSP','891800','BUXX','GC00','CL.1']
     vals_found = []
     # go to this website
     for indx in url_end:
@@ -109,8 +109,34 @@ def searchTreasury(driver):
     
     return vals_found
 
+def checkExcelClosed():
+    root = tk.Tk()
+    # width and height of message
+    width = 400
+    height = 100
+    # width and height of user screen
+    screenW = root.winfo_screenwidth()
+    screenH = root.winfo_screenheight()
+    # x and y coords of center of screen
+    x = (screenW/2) - (width/2)    
+    y = (screenH/2) - (height/2)
+    # set root starting position and size
+    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    # not resizable
+    #root.resizable(0,0)
+    # title
+    root.title('Close Excel')
+    tk.Label(root,text='Click OK when you have saved and closed your current excel file.\n').pack(side=tk.TOP)
+    button = tk.Button(root,text='OK',command = root.destroy,height=1,width=10)
+    button.pack(side=tk.TOP)
+    # error message
+    root.mainloop()
+
 
 def main():
+
+    checkExcelClosed()
+
     try:
         driver_path = r'C:/ChromeDriver/chromedriver.exe'
         driver = webdriver.Chrome(executable_path=driver_path)
@@ -119,11 +145,10 @@ def main():
         create_error_window(driver_error,400,100)
         return
     
+    
     wsj_vals = searchWSJ(driver)
     treas_vals = searchTreasury(driver)
     combined_vals = wsj_vals + treas_vals
-    print(combined_vals)
     write_vals_to_xl(combined_vals)
-    print(date.today())
     
 main()
